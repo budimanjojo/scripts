@@ -13,6 +13,7 @@ _localdir4=packages-community
 _localdir5=packages-extra
 _localdir6=manjaro-rt
 _localdir7=scripts
+_localdir8=my-git-prompt
 
 # Change the _remtarget to the remote you set for your Github repositories
 # you want to push
@@ -23,6 +24,7 @@ _remtarget4=origin
 _remtarget5=origin
 _remtarget6=origin
 _remtarget7=origin
+_remtarget8=origin
 
 push_1() {
   cd ${_githubdir};
@@ -164,10 +166,29 @@ push_7() {
   read -s -n1
 }
 
+push_8() {
+  cd ${_githubdir};
+  if [ -d "${_localdir8}" ]; then
+    cd $_localdir8
+  else
+    echo "Directory '${_localdir8}' is not found. Please make sure it exists in your ${_githubdir}"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget8 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
 
 push_all() {
   cd $_githubdir
-  if [[ -d "$_localdir1" && -d "$_localdir2" && -d "$_localdir3" && -d "$_localdir4" && -d "$_localdir5" && -d "$_localdir6" && -d "$_localdir7" ]]; then
+  if [[ -d "$_localdir1" && -d "$_localdir2" && -d "$_localdir3" && -d "$_localdir4" && -d "$_localdir5" && -d "$_localdir6" && -d "$_localdir7" && -d $_localdir8 ]]; then
     while true; do
       read -p "Do you wish to push all these repositories? (Y/n)" yn
       case $yn in
@@ -192,13 +213,15 @@ push_all() {
           echo "$_localdir6 has been successfully pushed"
           cd $_githubdir/$_localdir7
           git push $_remtarget7 master
-          echo "$_localdir7 has been successfully pushed"; break;;
+          echo "$_localdir7 has been successfully pushed"
+          git push $_remtarget8 master
+          echo "$_localdir8 has been successfully pushed"; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes (Y) or no (n)";;
       esac
     done
   else
-    echo "One or more of the directories $_localdir1 $_localdir2 $_localdir3 $_localdir4 $_localdir5 $_localdir6 $_localdir7 are not found."
+    echo "One or more of the directories $_localdir1 $_localdir2 $_localdir3 $_localdir4 $_localdir5 $_localdir6 $_localdir7 $_localdir8 are not found."
     echo "Please make sure they exist in your $_githubdir"
   fi
   echo ""
@@ -220,7 +243,8 @@ function main {
   echo -e " |  5. packages-extra                              |"
   echo -e " |  6. manjaro-rt                                  |"
   echo -e " |  7. scripts                                     |"
-  echo -e " |  8. "ALL" the repository above                  |"
+  echo -e " |  8. my-git-prompt                               |"
+  echo -e " |  9. "ALL" the repository above                  |"
   echo -e " └─────────────────────────────────────────────────┘"
   echo -e "         Pick your selection   -   0. EXIT "
   echo ""
@@ -255,6 +279,10 @@ function main {
       clear
       ;;
     8)
+      push_8
+      clear
+      ;;
+    9)
       push_all
       clear
       ;;
@@ -262,7 +290,7 @@ function main {
       clear && exit
       ;;
     *)
-      echo "Wrong input detected. Please input number 1-7." 
+      echo "Wrong input detected. Please input number 1-9." 
       clear
       ;;
   esac
