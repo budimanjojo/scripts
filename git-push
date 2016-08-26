@@ -13,7 +13,7 @@ _localdir4=packages-community
 _localdir5=packages-extra
 _localdir6=manjaro-rt
 _localdir7=scripts
-_localdir8=my-git-prompt
+_localdir8=jojo-zsh-prompt
 
 # Change the _remtarget to the remote you set for your Github repositories
 # you want to push
@@ -243,7 +243,7 @@ function main {
   echo -e " |  5. packages-extra                              |"
   echo -e " |  6. manjaro-rt                                  |"
   echo -e " |  7. scripts                                     |"
-  echo -e " |  8. my-git-prompt                               |"
+  echo -e " |  8. jojo-zsh-prompt                             |"
   echo -e " |  9. "ALL" the repository above                  |"
   echo -e " └─────────────────────────────────────────────────┘"
   echo -e "         Pick your selection   -   0. EXIT "
