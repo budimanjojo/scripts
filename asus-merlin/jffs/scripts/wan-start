@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# This script will check if you got a real public IP or not. If you got a private public IP, it will restart WAN interface until you get a real public IP.
+# Make sure your ISP provides real public IP before using this script, or else you will get a nonstop restart.
+# This is using legacy user script to catch wan-start event (https://github.com/RMerl/asuswrt-merlin.ng/wiki/User-scripts), might need to use the new wan-event instead but I don't use merlin anymore.
+
+# Get WAN IP address
+WANIP=$(nvram get wan0_ipaddr)
+
+# Not sure if sleep is needed
+sleep 60
+case $WANIP in
+    10.*|172.*|192.*)
+        echo "Private IP, restarting WAN"
+        service restart_wan;;
+    *)
+        echo "Public IP, yay";;
+esac
