@@ -1,0 +1,3 @@
+# Directories/files path to exclude from /usr/local/bin/serverbackup
+ftp
+.cache

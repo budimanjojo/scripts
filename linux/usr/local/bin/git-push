@@ -1,0 +1,301 @@
+#!/bin/bash
+#
+# This script is to push all my Github repositories
+
+_githubdir=$HOME/Github
+
+# Change the _localdir to your local directory of Github repositories you
+# want to push
+_localdir1=dotfiles
+_localdir2=linux-rt-lts-manjaro
+_localdir3=packages-core
+_localdir4=packages-community
+_localdir5=packages-extra
+_localdir6=manjaro-rt
+_localdir7=scripts
+_localdir8=jojo-zsh-prompt
+
+# Change the _remtarget to the remote you set for your Github repositories
+# you want to push
+_remtarget1=origin
+_remtarget2=origin
+_remtarget3=origin
+_remtarget4=origin
+_remtarget5=origin
+_remtarget6=origin
+_remtarget7=origin
+_remtarget8=origin
+
+push_1() {
+  cd ${_githubdir};
+  if [ -d "${_localdir1}" ]; then
+    cd $_localdir1
+  else
+    echo "Directory '${_localdir1}' is not found. Please make sure it exists in your ${_githubdir}"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget1 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+push_2() {
+  cd $_githubdir;
+  if [ -d "$_localdir2" ]; then
+    cd $_localdir2
+  else
+    echo "Directory '$_localdir2' is not found. Please make sure it exists in your $_githubdir"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget2 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+push_3() {
+  cd $_githubdir;
+  if [ -d "$_localdir3" ]; then
+    cd $_localdir3
+  else
+    echo "Directory '$_localdir3' is not found. Please make sure it exists in your $_githubdir"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget3 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+push_4() {
+  cd $_githubdir;
+  if [ -d "$_localdir4" ]; then
+    cd $_localdir4
+  else
+    echo "Directory '$_localdir4' is not found. Please make sure it exists in your $_githubdir"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget4 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+push_5() {
+  cd $_githubdir;
+  if [ -d "$_localdir5" ]; then
+    cd $_localdir5
+  else
+    echo "Directory '$_localdir5' is not found. Please make sure it exists in your $_githubdir"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget5 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+push_6() {
+  cd $_githubdir;
+  if [ -d "$_localdir6" ]; then
+    cd $_localdir6
+  else
+    echo "Directory '$_localdir6' is not found. Please make sure it exists in your $_githubdir"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget6 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+push_7() {
+  cd $_githubdir;
+  if [ -d "$_localdir7" ]; then
+    cd $_localdir7
+  else
+    echo "Directory '$_localdir7' is not found. Please make sure it exists in your $_githubdir"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget7 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+push_8() {
+  cd ${_githubdir};
+  if [ -d "${_localdir8}" ]; then
+    cd $_localdir8
+  else
+    echo "Directory '${_localdir8}' is not found. Please make sure it exists in your ${_githubdir}"
+  fi
+  while true; do
+    read -p "Do you wish to push this repository? (Y/n)" yn
+    case $yn in
+      [Yy]* ) git push $_remtarget8 master; break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes (Y) or no (n)";;
+    esac
+  done
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+push_all() {
+  cd $_githubdir
+  if [[ -d "$_localdir1" && -d "$_localdir2" && -d "$_localdir3" && -d "$_localdir4" && -d "$_localdir5" && -d "$_localdir6" && -d "$_localdir7" && -d $_localdir8 ]]; then
+    while true; do
+      read -p "Do you wish to push all these repositories? (Y/n)" yn
+      case $yn in
+        [Yy]* )
+          cd $_githubdir/$_localdir1
+          git push $_remtarget1 master
+          echo "$_localdir1 has been successfully pushed"
+          cd $_githubdir/$_localdir2
+          git push $_remtarget2 master
+          echo "$_localdir2 has been successfully pushed"
+          cd $_githubdir/$_localdir3
+          git push $_remtarget3 master
+          echo "$_localdir3 has been successfully pushed"
+          cd $_githubdir/$_localdir4
+          git push $_remtarget4 master
+          echo "$_localdir4 has been successfully pushed"
+          cd $_githubdir/$_localdir5
+          git push $_remtarget5 master
+          echo "$_localdir5 has been successfully pushed"
+          cd $_githubdir/$_localdir6
+          git push $_remtarget6 master
+          echo "$_localdir6 has been successfully pushed"
+          cd $_githubdir/$_localdir7
+          git push $_remtarget7 master
+          echo "$_localdir7 has been successfully pushed"
+          git push $_remtarget8 master
+          echo "$_localdir8 has been successfully pushed"; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes (Y) or no (n)";;
+      esac
+    done
+  else
+    echo "One or more of the directories $_localdir1 $_localdir2 $_localdir3 $_localdir4 $_localdir5 $_localdir6 $_localdir7 $_localdir8 are not found."
+    echo "Please make sure they exist in your $_githubdir"
+  fi
+  echo ""
+  echo "Press any key to continue"
+  read -s -n1
+}
+
+function main {
+  while true; do
+  clear
+  echo ""
+  echo -e "              ::Git Push Settings:: "
+  echo -e " ┌─────────────────────────────────────────────────┐"
+  echo -e " | Please select the repository you want to push   |"
+  echo -e " |  1. dotfiles repository                         |"
+  echo -e " |  2. linux-rt-lts-manjaro repository             |"
+  echo -e " |  3. packages-core                               |"
+  echo -e " |  4. packages-community                          |"
+  echo -e " |  5. packages-extra                              |"
+  echo -e " |  6. manjaro-rt                                  |"
+  echo -e " |  7. scripts                                     |"
+  echo -e " |  8. jojo-zsh-prompt                             |"
+  echo -e " |  9. "ALL" the repository above                  |"
+  echo -e " └─────────────────────────────────────────────────┘"
+  echo -e "         Pick your selection   -   0. EXIT "
+  echo ""
+  read -p "Please input your selection:" choice
+  case $choice in
+    1)
+      push_1
+      clear
+      ;;
+    2)
+      push_2
+      clear
+      ;;
+    3)
+      push_3
+      clear
+      ;;
+    4)
+      push_4
+      clear
+      ;;
+    5)
+      push_5
+      clear
+      ;;
+    6)
+      push_6
+      clear
+      ;;
+    7)
+      push_7
+      clear
+      ;;
+    8)
+      push_8
+      clear
+      ;;
+    9)
+      push_all
+      clear
+      ;;
+    0)
+      clear && exit
+      ;;
+    *)
+      echo "Wrong input detected. Please input number 1-9." 
+      clear
+      ;;
+  esac
+done
+}
+
+main
+

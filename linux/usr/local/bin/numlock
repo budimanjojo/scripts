@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# This simple script can be added as a startup script for your Linux desktop to make sure numlock is on after startup.
+# Requires numlockx program installed in the system to work.
+
+/usr/bin/numlockx off && sleep 1 && /usr/bin/numlockx on &

@@ -1,0 +1,151 @@
+#!/bin/bash
+
+# This script will backup my docker volumes, databases, and directories to my NAS in over the internet.
+# I use this to backup my hosted VPS into my home NAS.
+# Modify the variables according to your setup. Some variables are redacted of course.
+# This script requires rsync, ssh, and optionally docker to work.
+
+# System parameters
+VERBOSE="yes"
+LOG_FILE="/var/log/server-backup.log" # Where to save the log files
+DELETE_OLD_LOG_FILE="yes" # Whether to delete old log files
+KEEP_LOG_FILE="weekly" # Can be daily, weekly, monthly, yearly
+BACKUP_TO_FOLDER="/home/budiman/backups" # Local directory for volumes and databases backup
+
+# Remote server parameters
+REMOTE_SERVER="yes" # Whether to backup to remote server using rsync
+BACKUP_ROOT="/home/budiman" # Directory in local server to send to remote server
+REMOTE_BACKUP_TO_FOLDER="/mnt/server_backup" # Directory in remote server to save backups
+REMOTE_SSH_PORT="2222" # Remote SSH port
+REMOTE_USER="root" # Remote SSH user
+REMOTE_HOST="mydomain.com" # Remote domain or IP to SSH into
+BACKUP_INCLUDE_FILE="/usr/local/etc/backup-includes.txt" # Include file to backup
+BACKUP_EXCLUDE_FILE="/usr/local/etc/backup-excludes.txt" # Exclude file to backup
+
+# Nextcloud parameters
+HAVE_NEXTCLOUD_CONTAINER="yes"
+NEXTCLOUD_CONTAINER_NAME="nextcloud"
+WEB_SERVER_USER="www-data"
+
+# Database parameters (make sure you have $MYSQL_ROOT_PASSWORD env set in your mariadb/mysql container)
+BACKUP_MARIA_DB="yes"
+DELETE_OLD_MARIA_BACKUP="yes" # Whether to delete old backup files
+KEEP_MARIA_BACKUP="5" # In days
+MARIA_CONTAINER_NAME="mariadb"
+MARIA_DB_NAME="nextcloud wordpress postfix" # Space separated database names
+
+# Docker volume parameters
+DOCKER_VOLUMES="nextcloud-data wordpress-data" # Space separated named docker volumes
+DELETE_OLD_VOLUME_BACKUP="yes" # Whether to delete old backup files
+KEEP_VOLUME_BACKUP="5" # In days
+
+# Script starts here
+log () {
+    if [[ $VERBOSE == "yes" ]]; then
+        touch $LOG_FILE
+        echo $@ 1>&2 >> $LOG_FILE
+    fi
+}
+
+updatelogrotatefile() {
+    cat > /etc/logrotate.d/$scriptname << EOF
+$LOG_FILE {
+    $KEEP_LOG_FILE
+    missingok
+    rotate 1
+    nocreate
+}
+EOF
+}
+
+log ""
+log "Backup Started on $(date)"
+
+scriptname="$(basename ${0%.*})"
+pidfile="/var/run/$scriptname.pid"
+if [[ -f $pidfile ]]; then
+    pid=$(cat $pidfile)
+    ps -p $pid > /dev/null 2>&1
+    if [[ $? -eq 0 ]]; then
+        log "Another $scriptname instance is still running, exiting"
+        exit 1
+    else
+        echo $$ > $pidfile
+        if [[ $? -ne 0 ]]; then
+            log "Could not create PID file for $scriptname, exiting"
+            exit 1
+        fi
+    fi
+else
+    echo $$ > $pidfile
+    if [[ $? -ne 0 ]]; then
+        log "Could not create PID file for $scriptname, exiting"
+        exit 1
+    fi
+fi
+
+if [[ $DELETE_OLD_LOG_FILE == "yes" ]]; then
+    if [[ -f /etc/logrotate.d/$scriptname ]] && [[ ! $(grep -F $LOG_FILE /etc/logrotate.d/$scriptname) ]] && [[ ! $(grep -F $KEEP_LOG_FILE /etc/logrotate.d/$scriptname) ]]; then
+        mv /etc/logrotate.d/$scriptname{,.disabled}
+        updatelogrotatefile
+    else
+        updatelogrotatefile
+    fi
+fi
+
+if [[ $HAVE_NEXTCLOUD_CONTAINER == "yes" ]]; then
+    log "Turning Nextcloud maintenance mode on"
+    /usr/bin/docker exec --user $WEB_SERVER_USER $NEXTCLOUD_CONTAINER_NAME php occ maintenance:mode --on
+fi
+
+if [[ $BACKUP_MARIA_DB == "yes" ]]; then
+    mkdir -p $BACKUP_TO_FOLDER/mariadb
+    if [[ $DELETE_OLD_MARIA_BACKUP == "yes" ]]; then
+        log "Deleting old Mariadb database backups"
+        find $BACKUP_TO_FOLDER/mariadb -maxdepth 1 -mtime +$KEEP_MARIA_BACKUP -type f -name \*.sql -delete
+    fi
+    for dbname in $MARIA_DB_NAME; do
+        log "Backing up $dbname Mariadb database"
+        /usr/bin/docker exec -e "dbname=$dbname" $MARIA_CONTAINER_NAME bash -c \
+            'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" "$dbname"' > $BACKUP_TO_FOLDER/mariadb/$dbname"_$(date +"%y-%m-%d")".sql
+        log "Mariadb database $dbname backed up as $BACKUP_TO_FOLDER/mariadb/$dbname"_$(date +"%y-%m-%d")".sql"
+    done
+fi
+
+mkdir -p $BACKUP_TO_FOLDER/volumes
+if [[ $DELETE_OLD_VOLUME_BACKUP == "yes" ]]; then
+    log "Deleting old Docker volume backups"
+    find $BACKUP_TO_FOLDER/volumes -maxdepth 1 -mtime +$KEEP_VOLUME_BACKUP -type f -name \*.tar.bz2 -delete
+fi
+
+for dvolume in $DOCKER_VOLUMES; do
+    log "Backin up $dvolume Docker volume"
+    /usr/bin/docker run --rm \
+        -v $dvolume:/volume \
+        -v $BACKUP_TO_FOLDER/volumes:/backup \
+        alpine \
+        tar cjf /backup/$dvolume"_$(date +"%y-%m-%d")".tar.bz2 /volume
+    log "Docker volume $dvolume backed up as $BACKUP_TO_FOLDER/volumes/$dvolume"_$(date +"%y-%m-%d")".tar.bz2"
+done
+
+if [[ $HAVE_NEXTCLOUD_CONTAINER == "yes" ]]; then
+    log "Turning Nextcloud maintenance mode back off"
+    /usr/bin/docker exec --user $WEB_SERVER_USER $NEXTCLOUD_CONTAINER_NAME php occ maintenance:mode --off
+fi
+
+if [[ $REMOTE_SERVER == "yes" ]]; then
+    log "Sending backups to $REMOTE_HOST, they will be in $REMOTE_BACKUP_TO_FOLDER"
+    rsync -azvlzz \
+        --human-readable \
+        --stat \
+        --delete-excluded \
+        --exclude-from=$BACKUP_EXCLUDE_FILE \
+        --include-from=$BACKUP_INCLUDE_FILE \
+        --rsync-path="mkdir -p $REMOTE_BACKUP_TO_FOLDER && rsync" \
+        -e "ssh -p $REMOTE_SSH_PORT" $BACKUP_ROOT $REMOTE_USER@$REMOTE_HOST:$REMOTE_BACKUP_TO_FOLDER \
+        --log-file=$LOG_FILE
+fi
+
+log "Backup completed on $(date)"
+rm $pidfile
+exit 0
