@@ -1,0 +1,37 @@
+<?php
+
+/* This script will check if you got a real public IP or not. If you got a private public IP, it will restart WAN interface until you get a real public IP. */
+/* Make sure your ISP provides real public IP before using this script, or else you will get a nonstop restart. */
+/* This is using legacy plugin configure to catch 'newwanip' event (https://docs.opnsense.org/development/backend/legacy.html) */
+
+function checkpublicip_configure()
+{
+    return array(
+        'newwanip' => array('checkpublicip_configure_do')
+        );
+}
+
+function checkpublicip_configure_do($verbose = true)
+{
+    if ($verbose) {
+        echo "Checking WAN IP...";
+        }
+
+        $wan_ip = shell_exec('ifconfig pppoe0 | grep "inet " | cut -d " " -f2');
+        $wan_ip_begin = substr($wan_ip, 0, 3);
+
+        switch ($wan_ip_begin) {
+            case '172':
+            case '192':
+            case '10.':
+                echo " Getting new IP... ";
+                shell_exec('configctl interface reconfigure wan');
+                break;
+            default:
+                echo " Good to go... ";
+        }
+
+        if ($verbose) {
+            echo "done.\n";
+        }
+}
