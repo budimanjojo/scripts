@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# This script will run an application and minimize it right away.
+# I use this to autostart evolution as minimized.
+# You need to have "wmctrl" and "xdotool" installed
+
+if [ $# -eq 0 ]; then
+  scriptname=$(basename "$0")
+  echo "Usage: ${scriptname} <program_name> <window_title>"
+  echo "For example: ${scriptname} evolution Evolution"
+  exit 1
+fi
+
+program_name=$(command -v "$1")
+if [ "$program_name" != "" ]; then
+  "$program_name" > /dev/null 2>&1 &
+fi
+
+t=$((SECONDS+30))
+while [ $SECONDS -le "$t" ]; do
+  if [ -z "$2" ]; then
+    window_name=$1
+  else
+    window_name=$2
+  fi
+  active_window=$(wmctrl -l | grep "$window_name" | cut -d" " -f1)
+  if [ "$active_window" != "" ]; then
+    xdotool windowminimize "$active_window"
+    break
+  fi
+done
